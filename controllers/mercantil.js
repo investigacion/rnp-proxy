@@ -299,7 +299,7 @@ function step5(requestor, cedula, cb) {
 
 			window.close();
 
-			if (button && !button.classList.contains('rich-datascr-button-dsbld')) {
+			if (button && -1 === button.className.indexOf('rich-datascr-button-dsbld')) {
 				req = requestor({
 					path: '/shopping/padronFisico.jspx',
 					method: 'POST'
