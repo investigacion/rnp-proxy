@@ -8,7 +8,7 @@ var async = require('async');
 var queue = require('./shared/queue');
 
 exports.get = function(req, res) {
-	var cedula, logger, cache, app;
+	var cedula, logger, cache, app, cacheMiss;
 
 	app = req.app;
 	cache = app.get('cache');
@@ -16,26 +16,7 @@ exports.get = function(req, res) {
 
 	cedula = req.params.cedula;
 
-	cache.get(key(), function(err, results) {
-		if (err) {
-			logger.error('[Mercantil] Error while getting value from cache for ' + cedula + ': ' + err);
-			res.json(502, err);
-			return;
-		}
-
-		if (results) {
-			results = JSON.parse(results);
-
-			if (results.length > 0) {
-				logger.info('[Mercantil] Got results from cache for ' + cedula + '.');
-				res.json(results);
-			} else {
-				res.send(404);
-			}
-
-			return;
-		}
-
+	cacheMiss = function() {
 		scrape(app, cedula, function(err, results) {
 			if (err) {
 				logger.error('[Mercantil] Error while scraping ' + cedula + ': ' + err);
@@ -46,6 +27,28 @@ exports.get = function(req, res) {
 				res.send(404);
 			}
 		});
+	};
+
+	if (!cache) {
+		return cacheMiss();
+	}
+
+	cache.get(key(), function(err, results) {
+		if (err) {
+			logger.error('[Mercantil] Error while getting value from cache for ' + cedula + ': ' + err);
+			res.json(502, err);
+		} else if (results) {
+			results = JSON.parse(results);
+
+			if (results.length > 0) {
+				logger.info('[Mercantil] Got results from cache for ' + cedula + '.');
+				res.json(results);
+			} else {
+				res.send(404);
+			}
+		} else {
+			cacheMiss();
+		}
 	});
 };
 
@@ -97,9 +100,11 @@ function scrape(app, cedula, cb) {
 				logger.info('[Mercantil] Scraped ' + cedula + ' with ' + results.length + ' results.');
 			}
 
-			cache.set(key(cedula), JSON.stringify(results), 'EX', app.get('cache ttl'), function(err) {
-				logger.error('[Mercantil] Error while setting value in cache: ' + err);
-			});
+			if (cache) {
+				cache.set(key(cedula), JSON.stringify(results), 'EX', app.get('cache ttl'), function(err) {
+					logger.error('[Mercantil] Error while setting value in cache: ' + err);
+				});
+			}
 
 			cb(err, results);
 			next();
