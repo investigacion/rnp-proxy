@@ -254,7 +254,7 @@ function step5(requestor, cedula, cb) {
 		});
 
 		res.on('end', function() {
-			extractRows(html);
+			extractRows(html, []);
 		});
 	});
 
@@ -266,9 +266,9 @@ function step5(requestor, cedula, cb) {
 	req.write('AJAXREQUEST=_viewRoot&formBusqueda=formBusqueda&formBusqueda%3Aj_id161=1&formBusqueda%3Aj_id165=1&formBusqueda%3Aj_id258=' + cedula + '&formBusqueda%3AmodalBMOpenedState=&formBusqueda%3AmodalFincasOpenedState=&formBusqueda%3AmodalNombramientosOpenedState=&formBusqueda%3AmodalAfectacionesOpenedState=&formBusqueda%3AmodalPoderesOpenedState=&formBusqueda%3AmodalAllOpenedState=&javax.faces.ViewState=j_id3&cIdentificacion=1&formBusqueda%3AinventoryList%3A0%3AshowItem=formBusqueda%3AinventoryList%3A0%3AshowItem&numIdentificacion=' + cedula + '&nConsecIdentific=0&');
 	req.end();
 
-	extractRows = function(html) {
+	extractRows = function(html, results) {
 		jsdom.env(html, function(errs, window) {
-			var t, req, button, document = window.document, results = [];
+			var t, req, button, document = window.document;
 
 			t = function(node) {
 				return node.textContent.trim();
@@ -317,7 +317,7 @@ function step5(requestor, cedula, cb) {
 					});
 			
 					res.on('end', function() {
-						extractRows(html);
+						extractRows(html, results);
 					});
 				});
 
