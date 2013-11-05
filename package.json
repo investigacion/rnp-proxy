@@ -1,4 +1,5 @@
 {
+	"private": true,
 	"dependencies": {
 		"optimist": "0.x",
 		"jsdom": "0.x",
