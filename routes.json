@@ -1,4 +1,5 @@
 [
 	"/",
-	"/cedulas/:cedula/mercantil"
+	"/cedulas/:cedula/mercantil",
+	"/cedulas/:cedula/morosidad"
 ]
