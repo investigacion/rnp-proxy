@@ -224,7 +224,7 @@ function step5(requestor, cedula, cb) {
 					}
 
 					results.push({
-						cedulaJurídica: t(row.children[0]),
+						cedulaJurídica: t(row.children[0]).replace(/\-/g, ''),
 						nombre: t(row.children[1]),
 						citasInscripción: t(row.children[2]),
 						nombradoComo: t(row.children[3])
