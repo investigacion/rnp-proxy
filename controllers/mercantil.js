@@ -102,7 +102,9 @@ function scrape(app, cedula, cb) {
 
 			if (cache) {
 				cache.set(key(cedula), JSON.stringify(results), 'EX', app.get('cache ttl'), function(err) {
-					logger.error('[Mercantil] Error while setting value in cache: ' + err);
+					if (err) {
+						logger.error('[Mercantil] Error while setting value in cache: ' + err);
+					}
 				});
 			}
 
