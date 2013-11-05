@@ -57,6 +57,10 @@ function scrape(logger, cedula, cb) {
 				step5(requestor, cedula, cb);
 			}
 		], function(err, results) {
+			if (!err) {
+				logger.info('Scraped ' + cedula + ' with ' + results.length + ' results.');
+			}
+
 			cb(err, results);
 			next();
 		});
