@@ -304,7 +304,7 @@ function step5(requestor, cedula, cb) {
 				}
 
 				return p;
-			});
+			}, null);
 
 			window.close();
 
