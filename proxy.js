@@ -58,7 +58,7 @@ app.set('logger', logger);
 if (argv.cache) {
 	logger.info('Initialising Redis cache.');
 
-	cache = cache.createClient(argv['redis-port'], argv['redis-host']);
+	cache = redis.createClient(argv['redis-port'], argv['redis-host']);
 	cache['client setname']('rnp-proxy');
 
 	app.set('cache', cache);
