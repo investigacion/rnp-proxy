@@ -6,57 +6,11 @@ var assert = require('assert');
 var jsdom = require('jsdom');
 var async = require('async');
 var queue = require('./shared/queue');
+var cedulas = require('./shared/cedulas');
 
 exports.get = function(req, res) {
-	var cedula, logger, cache, app, cacheMiss;
-
-	app = req.app;
-	cache = app.get('cache');
-	logger = app.get('logger');
-
-	cedula = req.params.cedula;
-
-	cacheMiss = function() {
-		logger.info('[Mercantil] Cache miss for ' + cedula + '.');
-		scrape(app, cedula, function(err, results) {
-			if (err) {
-				logger.error('[Mercantil] Error while scraping ' + cedula + ': ' + err);
-				res.json(502, err);
-			} else if (results.length > 0) {
-				res.json(results);
-			} else {
-				res.send(404);
-			}
-		});
-	};
-
-	if (!cache) {
-		logger.warn('[Mercantil] Warning: not using cache.');
-		return cacheMiss();
-	}
-
-	cache.get(key(cedula), function(err, results) {
-		if (err) {
-			logger.error('[Mercantil] Error while getting value from cache for ' + cedula + ': ' + err);
-			res.json(502, err);
-		} else if (results) {
-			results = JSON.parse(results);
-
-			if (results.length > 0) {
-				logger.info('[Mercantil] Got results from cache for ' + cedula + '.');
-				res.json(results);
-			} else {
-				res.send(404);
-			}
-		} else {
-			cacheMiss();
-		}
-	});
+	cedulas.scrape('Mercantil', req.params.cedula, scrape, res);
 };
-
-function key(cedula) {
-	return 'rnp-proxy.' + cedula + '.mercantil';
-}
 
 function scrape(app, cedula, cb) {
 	var logger, cache;
@@ -98,21 +52,8 @@ function scrape(app, cedula, cb) {
 				step5(requestor, cedula, cb);
 			}
 		], function(err, results) {
-			var cacheTtl;
-
 			if (!err) {
 				logger.info('[Mercantil] Scraped ' + cedula + ' with ' + results.length + ' results.');
-			}
-
-			if (!err && cache) {
-				cacheTtl = app.get('cache ttl');
-
-				logger.info('[Mercantil] Caching result for ' + cedula + ' with TTL ' + cacheTtl + '.');
-				cache.set(key(cedula), JSON.stringify(results), 'EX', cacheTtl, function(err) {
-					if (err) {
-						logger.error('[Mercantil] Error while setting value in cache: ' + err);
-					}
-				});
 			}
 
 			cb(err, results);
@@ -277,7 +218,13 @@ function step5(requestor, cedula, cb) {
 
 	extractRows = function(html, results) {
 		jsdom.env(html, function(errs, window) {
-			var t, req, button, document = window.document;
+			var t, req, button, document;
+
+			if (errs) {
+				return cb(errs);
+			}
+
+			document = window.document;
 
 			t = function(node) {
 				return node.textContent.trim();
@@ -314,17 +261,17 @@ function step5(requestor, cedula, cb) {
 					method: 'POST'
 				}, function(res) {
 					var html = '';
-			
+
 					assert.equal(res.statusCode, 200);
-			
+
 					res.on('readable', function() {
 						html += res.read();
 					});
-			
+
 					res.on('error', function(err) {
 						cb(err);
 					});
-			
+
 					res.on('end', function() {
 						extractRows(html, results);
 					});
