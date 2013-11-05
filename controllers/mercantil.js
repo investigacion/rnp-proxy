@@ -14,7 +14,7 @@ exports.get = function(req, res) {
 	cedula = req.params.cedula;
 	scrape(logger, cedula, function(err, results) {
 		if (err) {
-			logger.error('Error while scraping: ' + err);
+			logger.error('[Mercantil] Error while scraping: ' + err);
 			res.json(502, err);
 		} else {
 			res.json(results);
@@ -23,7 +23,7 @@ exports.get = function(req, res) {
 };
 
 function scrape(logger, cedula, cb) {
-	logger.info('Scraping cedula ' + cedula + '.');
+	logger.info('[Mercantil] Scraping cedula ' + cedula + '.');
 
 	queue.scrape(function(err, requestor, next) {
 		if (err) {
@@ -33,32 +33,32 @@ function scrape(logger, cedula, cb) {
 
 		async.waterfall([
 			function(cb) {
-				logger.info('Cedula ' + cedula + ': step 1');
+				logger.info('[Mercantil] Cedula ' + cedula + ': step 1');
 				step1(requestor, cb);
 			},
 
 			function(cb) {
-				logger.info('Cedula ' + cedula + ': step 2');
+				logger.info('[Mercantil] Cedula ' + cedula + ': step 2');
 				step2(requestor, cb);
 			},
 
 			function(cb) {
-				logger.info('Cedula ' + cedula + ': step 3');
+				logger.info('[Mercantil] Cedula ' + cedula + ': step 3');
 				step3(requestor, cb);
 			},
 
 			function(cb) {
-				logger.info('Cedula ' + cedula + ': step 4');
+				logger.info('[Mercantil] Cedula ' + cedula + ': step 4');
 				step4(requestor, cedula, cb);
 			},
 
 			function(cb) {
-				logger.info('Cedula ' + cedula + ': step 5');
+				logger.info('[Mercantil] Cedula ' + cedula + ': step 5');
 				step5(requestor, cedula, cb);
 			}
 		], function(err, results) {
 			if (!err) {
-				logger.info('Scraped ' + cedula + ' with ' + results.length + ' results.');
+				logger.info('[Mercantil] Scraped ' + cedula + ' with ' + results.length + ' results.');
 			}
 
 			cb(err, results);
