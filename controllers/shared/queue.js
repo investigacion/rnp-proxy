@@ -29,7 +29,7 @@ function login(cb) {
 
 		sessionId = res.headers['set-cookie'][0].match(/JSESSIONID=([^;]+)/)[1];
 
-		logger.info('Got session ID: ' + sessionId + '.');
+		logger.info('[Queue] Got session ID: ' + sessionId + '.');
 
 		requestor = function(options, cb) {
 			if (!options.headers) {
