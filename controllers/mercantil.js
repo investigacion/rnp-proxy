@@ -230,7 +230,7 @@ function step4(requestor, cedula, cb) {
 }
 
 function step5(requestor, cedula, cb) {
-	var req;
+	var req, extractRows;
 
 	req = requestor({
 		path: '/shopping/padronFisico.jspx',
@@ -249,31 +249,7 @@ function step5(requestor, cedula, cb) {
 		});
 
 		res.on('end', function() {
-			jsdom.env(html, function(errs, window) {
-				var t, document = window.document, results = [];
-
-				t = function(node) {
-					return node.textContent.trim();
-				};
-
-				Array.prototype.forEach.call(document.querySelectorAll('#formBusqueda\\:nombramientosList\\:tb tr'), function(row, i) {
-
-					// The first row is a fake.
-					if (0 === i) {
-						return;
-					}
-
-					results.push({
-						cedulaJurídica: t(row.children[0]).replace(/\-/g, ''),
-						nombre: t(row.children[1]),
-						citasInscripción: t(row.children[2]),
-						nombradoComo: t(row.children[3])
-					});
-				});
-
-				window.close();
-				cb(null, results);
-			});
+			extractRows(html);
 		});
 	});
 
@@ -284,4 +260,67 @@ function step5(requestor, cedula, cb) {
 	req.setTimeout(120 * 1000);
 	req.write('AJAXREQUEST=_viewRoot&formBusqueda=formBusqueda&formBusqueda%3Aj_id161=1&formBusqueda%3Aj_id165=1&formBusqueda%3Aj_id258=' + cedula + '&formBusqueda%3AmodalBMOpenedState=&formBusqueda%3AmodalFincasOpenedState=&formBusqueda%3AmodalNombramientosOpenedState=&formBusqueda%3AmodalAfectacionesOpenedState=&formBusqueda%3AmodalPoderesOpenedState=&formBusqueda%3AmodalAllOpenedState=&javax.faces.ViewState=j_id3&cIdentificacion=1&formBusqueda%3AinventoryList%3A0%3AshowItem=formBusqueda%3AinventoryList%3A0%3AshowItem&numIdentificacion=' + cedula + '&nConsecIdentific=0&');
 	req.end();
+
+	extractRows = function(html) {
+		jsdom.env(html, function(errs, window) {
+			var t, req, button, document = window.document, results = [];
+
+			t = function(node) {
+				return node.textContent.trim();
+			};
+
+			Array.prototype.forEach.call(document.querySelectorAll('#formBusqueda\\:nombramientosList\\:tb tr'), function(row, i) {
+
+				// The first row is a fake.
+				if (0 === i) {
+					return;
+				}
+
+				results.push({
+					cedulaJurídica: t(row.children[0]).replace(/\-/g, ''),
+					nombre: t(row.children[1]),
+					citasInscripción: t(row.children[2]),
+					nombradoComo: t(row.children[3])
+				});
+			});
+
+			button = Array.prototype.reduce.call(document.getElementsByClassName('rich-datascr-button'), function(p, button) {
+				if (button.textContent.trim() === '»') {
+					return button;
+				}
+
+				return p;
+			});
+
+			window.close();
+
+			if (button && !button.classList.contains('rich-datascr-button-dsbld')) {
+				req = requestor({
+					path: '/shopping/padronFisico.jspx',
+					method: 'POST'
+				}, function(res) {
+					var html = '';
+			
+					assert.equal(res.statusCode, 200);
+			
+					res.on('readable', function() {
+						html += res.read();
+					});
+			
+					res.on('error', function(err) {
+						cb(err);
+					});
+			
+					res.on('end', function() {
+						extractRows(html);
+					});
+				});
+
+				req.write('AJAXREQUEST=_viewRoot&formBusqueda=formBusqueda&formBusqueda%3Aj_id161=1&formBusqueda%3Aj_id165=1&formBusqueda%3Aj_id258=' + cedula + '&formBusqueda%3AmodalBMOpenedState=&formBusqueda%3AmodalFincasOpenedState=&formBusqueda%3AmodalNombramientosOpenedState=&formBusqueda%3AmodalAfectacionesOpenedState=&formBusqueda%3AmodalPoderesOpenedState=&formBusqueda%3AmodalAllOpenedState=&javax.faces.ViewState=j_id3&ajaxSingle=formBusqueda%3AnombramientosList%3Ads3&formBusqueda%3AnombramientosList%3Ads3=fastforward&AJAX%3AEVENTS_COUNT=1&');
+				req.end();
+			} else {
+				cb(null, results);
+			}
+		});
+	};
 }
