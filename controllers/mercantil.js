@@ -17,6 +17,7 @@ exports.get = function(req, res) {
 	cedula = req.params.cedula;
 
 	cacheMiss = function() {
+		logger.info('[Mercantil] Cache miss for ' + cedula + '.');
 		scrape(app, cedula, function(err, results) {
 			if (err) {
 				logger.error('[Mercantil] Error while scraping ' + cedula + ': ' + err);
@@ -30,10 +31,11 @@ exports.get = function(req, res) {
 	};
 
 	if (!cache) {
+		logger.warn('[Mercantil] Warning: not using cache.');
 		return cacheMiss();
 	}
 
-	cache.get(key(), function(err, results) {
+	cache.get(key(cedula), function(err, results) {
 		if (err) {
 			logger.error('[Mercantil] Error while getting value from cache for ' + cedula + ': ' + err);
 			res.json(502, err);
@@ -96,12 +98,17 @@ function scrape(app, cedula, cb) {
 				step5(requestor, cedula, cb);
 			}
 		], function(err, results) {
+			var cacheTtl;
+
 			if (!err) {
 				logger.info('[Mercantil] Scraped ' + cedula + ' with ' + results.length + ' results.');
 			}
 
-			if (cache) {
-				cache.set(key(cedula), JSON.stringify(results), 'EX', app.get('cache ttl'), function(err) {
+			if (!err && cache) {
+				cacheTtl = app.get('cache ttl');
+
+				logger.info('[Mercantil] Caching result for ' + cedula + ' with TTL ' + cacheTtl + '.');
+				cache.set(key(cedula), JSON.stringify(results), 'EX', cacheTtl, function(err) {
 					if (err) {
 						logger.error('[Mercantil] Error while setting value in cache: ' + err);
 					}
