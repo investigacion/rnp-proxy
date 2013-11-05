@@ -5,6 +5,7 @@
 		"jsdom": "0.x",
 		"express": "3.x",
 		"winston": "0.x",
-		"async": "0.x"
+		"async": "0.x",
+		"redis": "0.x"
 	}
 }

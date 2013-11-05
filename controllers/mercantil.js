@@ -8,21 +8,57 @@ var async = require('async');
 var queue = require('./shared/queue');
 
 exports.get = function(req, res) {
-	var cedula, logger;
+	var cedula, logger, cache, app;
 
-	logger = req.app.get('logger');
+	app = req.app;
+	cache = app.get('cache');
+	logger = app.get('logger');
+
 	cedula = req.params.cedula;
-	scrape(logger, cedula, function(err, results) {
+
+	cache.get(key(), function(err, results) {
 		if (err) {
-			logger.error('[Mercantil] Error while scraping: ' + err);
+			logger.error('[Mercantil] Error while getting value from cache for ' + cedula + ': ' + err);
 			res.json(502, err);
-		} else {
-			res.json(results);
+			return;
 		}
+
+		if (results) {
+			results = JSON.parse(results);
+
+			if (results.length > 0) {
+				logger.info('[Mercantil] Got results from cache for ' + cedula + '.');
+				res.json(results);
+			} else {
+				res.send(404);
+			}
+
+			return;
+		}
+
+		scrape(app, cedula, function(err, results) {
+			if (err) {
+				logger.error('[Mercantil] Error while scraping ' + cedula + ': ' + err);
+				res.json(502, err);
+			} else if (results.length > 0) {
+				res.json(results);
+			} else {
+				res.send(404);
+			}
+		});
 	});
 };
 
-function scrape(logger, cedula, cb) {
+function key(cedula) {
+	return 'rnp-proxy.' + cedula + '.mercantil';
+}
+
+function scrape(app, cedula, cb) {
+	var logger, cache;
+
+	cache = app.get('cache');
+	logger = app.get('logger');
+
 	logger.info('[Mercantil] Scraping cedula ' + cedula + '.');
 
 	queue.scrape(function(err, requestor, next) {
@@ -60,6 +96,10 @@ function scrape(logger, cedula, cb) {
 			if (!err) {
 				logger.info('[Mercantil] Scraped ' + cedula + ' with ' + results.length + ' results.');
 			}
+
+			cache.set(key(cedula), JSON.stringify(results), 'EX', app.get('cache ttl'), function(err) {
+				logger.error('[Mercantil] Error while setting value in cache: ' + err);
+			});
 
 			cb(err, results);
 			next();
