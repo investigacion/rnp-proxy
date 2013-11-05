@@ -10,8 +10,6 @@ function key(cedula, type) {
 	return 'rnp-proxy.' + cedula + '.' + type.toLowerCase();
 }
 
-exports.key = key;
-
 exports.scrape = function(type, cedula, scrape, res) {
 	var logger, cache, app, cacheMiss;
 
