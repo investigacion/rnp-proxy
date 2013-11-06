@@ -34,11 +34,11 @@ function scrape(app, cedula, cb) {
 
 			function(cb) {
 				logger.info('[Morosidad] Cedula ' + cedula + ': step 2');
-				step2(requestor, cb);
+				step2(requestor, cedula, cb);
 			}
 		], function(err, results) {
 			if (!err) {
-				logger.info('[Morosidad] Scraped ' + cedula + ' with ' + results.length + ' results.');
+				logger.info('[Morosidad] Scraped ' + cedula + ' with ' + Object.keys(results).length + ' keys.');
 			}
 
 			cb(err, results);
