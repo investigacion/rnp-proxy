@@ -78,6 +78,14 @@ app.use(function(err, req, res, next) {
 });
 
 server.on('request', app);
+server.on('connection', function(socket) {
+
+	// Scraping takes long. So set a long timeout.
+	socket.setTimeout(10 * 60 * 1000, function() {
+		logger.error('[Proxy] Socket timeout.');
+	});
+});
+
 server.listen(argv.port, function() {
 	logger.info('[Proxy] Listening on port ' + argv.port + ' with environment ' + app.get('env') + '.');
 });
