@@ -98,6 +98,7 @@ function step2(requestor, cedula, cb) {
 				var t, document, results = {};
 
 				if (errs) {
+					window.close();
 					return cb(errs);
 				}
 

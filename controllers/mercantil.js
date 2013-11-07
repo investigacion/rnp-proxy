@@ -166,6 +166,7 @@ function step4(logger, requestor, cedula, cb) {
 				var indexes;
 
 				if (errs) {
+					window.close();
 					return cb(errs);
 				}
 
