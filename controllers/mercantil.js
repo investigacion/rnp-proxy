@@ -281,7 +281,7 @@ function extractPerson(logger, requestor, cedula, index, cb) {
 					button = b;
 					return true;
 				}
-			}, null);
+			});
 
 			window.close();
 
