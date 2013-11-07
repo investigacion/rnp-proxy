@@ -44,12 +44,7 @@ function scrape(app, cedula, cb) {
 
 			function(cb) {
 				logger.info('[Mercantil] Cedula ' + cedula + ': step 4');
-				step4(requestor, cedula, cb);
-			},
-
-			function(cb) {
-				logger.info('[Mercantil] Cedula ' + cedula + ': step 5');
-				step5(requestor, cedula, cb);
+				step4(logger, requestor, cedula, cb);
 			}
 		], function(err, results) {
 			if (!err) {
@@ -153,17 +148,19 @@ function step3(requestor, cb) {
 	req.end();
 }
 
-function step4(requestor, cedula, cb) {
+function step4(logger, requestor, cedula, cb) {
 	var req;
 
 	req = requestor({
 		path: '/shopping/padronFisico.jspx',
 		method: 'POST'
 	}, function(res) {
+		var html = '';
+
 		assert.equal(res.statusCode, 200);
 
 		res.on('readable', function() {
-			res.read();
+			html += res.read();
 		});
 
 		res.on('error', function(err) {
@@ -171,7 +168,36 @@ function step4(requestor, cedula, cb) {
 		});
 
 		res.on('end', function() {
-			cb();
+			jsdom.env(html, function(errs, window) {
+				var indexes;
+
+				if (errs) {
+					return cb(errs);
+				}
+
+				// Note that for some cedulas, for example 502950673, there are multiple sets of records for variant spellings of the person's name.
+				indexes = window.document.querySelectorAll('#formBusqueda\\:inventoryList\\:tb > tr').length;
+
+				logger.info('[Mercantil] Got ' + indexes + ' name variant rows for ' + cedula + '.');
+
+				window.close();
+				async.timesSeries(indexes, function(index, next) {
+					logger.info('[Mercantil] Extracting rows from name variant ' + index + ' for ' + cedula + '.');
+
+					extractPerson(logger, requestor, cedula, index, next);
+				}, function(err, results) {
+					if (err) {
+						return cb(err);
+					}
+
+					// Flatten the arrays of accumulated results.
+					cb(null, results.reduce(function(results, set) {
+						results.push.apply(results, set);
+
+						return results;
+					}, []));
+				});
+			});
 		});
 	});
 
@@ -184,7 +210,7 @@ function step4(requestor, cedula, cb) {
 	req.end();
 }
 
-function step5(requestor, cedula, cb) {
+function extractPerson(logger, requestor, cedula, index, cb) {
 	var req, extractRows;
 
 	req = requestor({
@@ -213,12 +239,14 @@ function step5(requestor, cedula, cb) {
 	});
 
 	req.setTimeout(120 * 1000);
-	req.write('AJAXREQUEST=_viewRoot&formBusqueda=formBusqueda&formBusqueda%3Aj_id161=1&formBusqueda%3Aj_id165=1&formBusqueda%3Aj_id258=' + cedula + '&formBusqueda%3AmodalBMOpenedState=&formBusqueda%3AmodalFincasOpenedState=&formBusqueda%3AmodalNombramientosOpenedState=&formBusqueda%3AmodalAfectacionesOpenedState=&formBusqueda%3AmodalPoderesOpenedState=&formBusqueda%3AmodalAllOpenedState=&javax.faces.ViewState=j_id3&cIdentificacion=1&formBusqueda%3AinventoryList%3A0%3AshowItem=formBusqueda%3AinventoryList%3A0%3AshowItem&numIdentificacion=' + cedula + '&nConsecIdentific=0&');
+	req.write('AJAXREQUEST=_viewRoot&formBusqueda=formBusqueda&formBusqueda%3Aj_id161=1&formBusqueda%3Aj_id165=1&formBusqueda%3Aj_id258=' + cedula + '&formBusqueda%3AmodalBMOpenedState=&formBusqueda%3AmodalFincasOpenedState=&formBusqueda%3AmodalNombramientosOpenedState=&formBusqueda%3AmodalAfectacionesOpenedState=&formBusqueda%3AmodalPoderesOpenedState=&formBusqueda%3AmodalAllOpenedState=&javax.faces.ViewState=j_id3&cIdentificacion=1&formBusqueda%3AinventoryList%3A' + index + '%3AshowItem=formBusqueda%3AinventoryList%3A' + index + '%3AshowItem&numIdentificacion=' + cedula + '&nConsecIdentific=' + index + '&');
 	req.end();
 
 	extractRows = function(html, results) {
 		jsdom.env(html, function(errs, window) {
-			var t, req, button, document;
+			var t, req, button, document, count = 0;
+
+			logger.info('[Mercantil] Extracting rows for ' + cedula + '.');
 
 			if (errs) {
 				return cb(errs);
@@ -237,6 +265,7 @@ function step5(requestor, cedula, cb) {
 					return;
 				}
 
+				count++;
 				results.push({
 					cedulaJurídica: t(row.children[0]).replace(/\-/g, ''),
 					nombre: t(row.children[1]),
@@ -245,17 +274,20 @@ function step5(requestor, cedula, cb) {
 				});
 			});
 
-			button = Array.prototype.reduce.call(document.getElementsByClassName('rich-datascr-button'), function(p, button) {
-				if (button.textContent.trim() === '»') {
-					return button;
-				}
+			logger.info('[Mercantil] Extracted ' + count + ' rows for ' + cedula + ', total for person name variant at ' + results.length + '.');
 
-				return p;
+			Array.prototype.slice.call(document.querySelectorAll('#formBusqueda\\:nombramientosList\\:footer .rich-datascr-button'), 0).some(function(b) {
+				if (b.textContent.trim() === '»') {
+					button = b;
+					return true;
+				}
 			}, null);
 
 			window.close();
 
 			if (button && -1 === button.className.indexOf('rich-datascr-button-dsbld')) {
+				logger.info('[Mercantil] Moving to next rows page for ' + cedula + '.');
+
 				req = requestor({
 					path: '/shopping/padronFisico.jspx',
 					method: 'POST'
@@ -280,6 +312,8 @@ function step5(requestor, cedula, cb) {
 				req.write('AJAXREQUEST=_viewRoot&formBusqueda=formBusqueda&formBusqueda%3Aj_id161=1&formBusqueda%3Aj_id165=1&formBusqueda%3Aj_id258=' + cedula + '&formBusqueda%3AmodalBMOpenedState=&formBusqueda%3AmodalFincasOpenedState=&formBusqueda%3AmodalNombramientosOpenedState=&formBusqueda%3AmodalAfectacionesOpenedState=&formBusqueda%3AmodalPoderesOpenedState=&formBusqueda%3AmodalAllOpenedState=&javax.faces.ViewState=j_id3&ajaxSingle=formBusqueda%3AnombramientosList%3Ads3&formBusqueda%3AnombramientosList%3Ads3=fastforward&AJAX%3AEVENTS_COUNT=1&');
 				req.end();
 			} else {
+				logger.info('[Mercantil] Extracted last row page for ' + cedula + '.');
+
 				cb(null, results);
 			}
 		});
