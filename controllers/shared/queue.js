@@ -46,12 +46,10 @@ function login(cb) {
 			return https.request(options, cb);
 		};
 
+		res.resume();
+
 		res.on('error', function(err) {
 			cb(err);
-		});
-
-		res.on('readable', function() {
-			res.read();
 		});
 
 		res.on('end', function() {
@@ -66,12 +64,10 @@ function login(cb) {
 			}, function(res) {
 				assert.equal(res.statusCode, 200);
 
+				res.resume();
+
 				res.on('error', function(err) {
 					cb(err);
-				});
-
-				res.on('readable', function() {
-					res.read();
 				});
 
 				res.on('end', function() {

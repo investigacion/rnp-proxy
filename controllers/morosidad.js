@@ -55,9 +55,7 @@ function step1(requestor, cb) {
 	}, function(res) {
 		assert.equal(res.statusCode, 200);
 
-		res.on('readable', function() {
-			res.read();
-		});
+		res.resume();
 
 		res.on('error', function(err) {
 			cb(err);
