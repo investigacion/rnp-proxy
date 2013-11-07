@@ -29,7 +29,7 @@ function login(cb) {
 
 		sessionId = res.headers['set-cookie'][0].match(/JSESSIONID=([^;]+)/)[1];
 
-		logger.info('[Queue] Got session ID: ' + sessionId + '.');
+		logger.info('[Queue] [' + sessionId + '] Got session ID.');
 
 		requestor = function(options, cb) {
 			if (!options.headers) {
@@ -53,6 +53,8 @@ function login(cb) {
 		});
 
 		res.on('end', function() {
+			logger.info('[Queue] [' + sessionId + '] Submitting login data.');
+
 			req = https.request({
 				hostname: hostname,
 				path: '/shopping/login.jspx',
@@ -62,16 +64,27 @@ function login(cb) {
 					'Content-Type': 'application/x-www-form-urlencoded'
 				}
 			}, function(res) {
+				var html;
+
 				assert.equal(res.statusCode, 200);
 
-				res.resume();
+				res.on('readable', function() {
+					html += res.read();
+				});
 
 				res.on('error', function(err) {
 					cb(err);
 				});
 
 				res.on('end', function() {
-					cb(null, requestor);
+					if (-1 === html.indexOf('Datos incorrectos')) {
+						cb(null, requestor);
+					} else {
+
+						// TODO: Use a username and password pool.
+						logger.error('[Queue] [' + sessionId + '] Login failed: invalid credentials.');
+						cb(new Error('Login failed: invalid credentials.'));
+					}
 				});
 			});
 
