@@ -18,13 +18,13 @@ exports.scrape = function(type, cedula, scrape, res) {
 	logger = app.get('logger');
 
 	cacheMiss = function() {
-		logger.info('[' + type + '] Cache miss for ' + cedula + '.');
+		logger.info('[' + type + '] [' + cedula + '] Cache miss.');
 
 		scrape(app, cedula, function(err, results) {
 			var cacheTtl;
 
 			if (err) {
-				logger.error('[' + type + '] Error while scraping ' + cedula + ': ' + err);
+				logger.error('[' + type + '] [' + cedula + '] Error while scraping: ' + err);
 
 				res.json(502, err);
 
@@ -34,7 +34,7 @@ exports.scrape = function(type, cedula, scrape, res) {
 			if (cache) {
 				cacheTtl = app.get('cache ttl');
 
-				logger.info('[' + type + '] Caching result for ' + cedula + ' with TTL ' + cacheTtl + '.');
+				logger.info('[' + type + '] [' + cedula + '] Caching result with TTL ' + cacheTtl + '.');
 
 				cache.set(key(cedula, type), JSON.stringify(results), 'EX', cacheTtl, function(err) {
 					if (err) {
@@ -58,18 +58,18 @@ exports.scrape = function(type, cedula, scrape, res) {
 
 	cache.get(key(cedula, type), function(err, results) {
 		if (err) {
-			logger.error('[' + type + '] Error while getting value from cache for ' + cedula + ': ' + err);
+			logger.error('[' + type + '] [' + cedula + '] Error while getting value from cache: ' + err);
 
 			res.json(502, err);
 		} else if (results) {
 			results = JSON.parse(results);
 
 			if (empty(results)) {
-				logger.info('[' + type + '] Got (empty) results from cache for ' + cedula + '.');
+				logger.info('[' + type + '] [' + cedula + '] Got (empty) results from cache.');
 
 				res.send(404);
 			} else {
-				logger.info('[' + type + '] Got results from cache for ' + cedula + '.');
+				logger.info('[' + type + '] [' + cedula + '] Got results from cache.');
 
 				res.json(results);
 			}

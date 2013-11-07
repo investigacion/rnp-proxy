@@ -18,7 +18,7 @@ function scrape(app, cedula, cb) {
 	cache = app.get('cache');
 	logger = app.get('logger');
 
-	logger.info('[Morosidad] Scraping cedula ' + cedula + '.');
+	logger.info('[Morosidad] [' + cedula + '] Scraping.');
 
 	queue.scrape(function(err, requestor, next) {
 		if (err) {
@@ -28,17 +28,17 @@ function scrape(app, cedula, cb) {
 
 		async.waterfall([
 			function(cb) {
-				logger.info('[Morosidad] Cedula ' + cedula + ': step 1');
+				logger.info('[Morosidad] [' + cedula + '] Step 1');
 				step1(requestor, cb);
 			},
 
 			function(cb) {
-				logger.info('[Morosidad] Cedula ' + cedula + ': step 2');
+				logger.info('[Morosidad] [' + cedula + '] Step 2');
 				step2(requestor, cedula, cb);
 			}
 		], function(err, results) {
 			if (!err) {
-				logger.info('[Morosidad] Scraped ' + cedula + ' with ' + Object.keys(results).length + ' keys.');
+				logger.info('[Morosidad] [' + cedula + '] Scraped with ' + Object.keys(results).length + ' keys.');
 			}
 
 			cb(err, results);
