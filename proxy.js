@@ -56,7 +56,7 @@ app.disable('x-powered-by');
 app.set('logger', logger);
 
 if (argv.cache) {
-	logger.info('Initialising Redis cache.');
+	logger.info('[Proxy] Initialising Redis cache.');
 
 	cache = redis.createClient(argv['redis-port'], argv['redis-host']);
 
@@ -64,16 +64,20 @@ if (argv.cache) {
 	app.set('cache ttl', argv['cache-ttl']);
 
 	cache.on('error', function(err) {
-		logger.error('Redis error: ' + err);
+		logger.error('[Proxy] Redis error: ' + err);
 	});
 }
 
 // Compression comes first in the chain.
 app.use(express.compress());
+routes(app, require('./routes.json'));
+app.use(function(err, req, res, next) {
+	logger.error('[Proxy] Error while handling request: ' + err);
+
+	res.json(500, err);
+});
 
 server.on('request', app);
 server.listen(argv.port, function() {
-	logger.info('Listening on port ' + argv.port + ' with environment ' + app.get('env') + '.');
-
-	routes(app, require('./routes.json'));
+	logger.info('[Proxy] Listening on port ' + argv.port + ' with environment ' + app.get('env') + '.');
 });
