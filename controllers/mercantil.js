@@ -31,7 +31,7 @@ function normaliseCedula(cedula) {
 		zerofill(parts[2], 6);
 	}
 
-	return parts.join();
+	return parts.join('');
 }
 
 function scrape(app, cedula, cb) {
