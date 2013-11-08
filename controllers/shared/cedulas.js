@@ -17,6 +17,12 @@ exports.scrape = function(type, cedula, scrape, res) {
 	cache = app.get('cache');
 	logger = app.get('logger');
 
+	if (!(/^\d+$/).test(cedula)) {
+		logger.warn('[' + type + '] [' + cedula + '] Received invalid cedula: ' + cedula + '.');
+
+		return res.json(404);
+	}
+
 	cacheMiss = function() {
 		logger.info('[' + type + '] [' + cedula + '] Cache miss.');
 
