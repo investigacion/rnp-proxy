@@ -290,9 +290,9 @@ function extractPerson(logger, requestor, cedula, index, cb) {
 
 				count++;
 				results.push({
-					cedulaJurídica: normaliseCedula(t(row.children[0])),
+					cedulaJuridica: normaliseCedula(t(row.children[0])),
 					nombre: t(row.children[1]),
-					citasInscripción: t(row.children[2]),
+					citasInscripcion: t(row.children[2]),
 					nombradoComo: t(row.children[3])
 				});
 			});
