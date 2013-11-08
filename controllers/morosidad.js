@@ -48,92 +48,64 @@ function scrape(app, cedula, cb) {
 }
 
 function step1(requestor, cb) {
-	var req;
-
-	req = requestor({
-		path: '/shopping/consultaDocumentos/consultaMorosidadPJInterna.jspx'
-	}, function(res) {
+	requestor({
+		url: 'https://www.rnpdigital.com/shopping/consultaDocumentos/consultaMorosidadPJInterna.jspx'
+	}, function(err, res) {
 		assert.equal(res.statusCode, 200);
-
-		res.resume();
-
-		res.on('error', function(err) {
-			cb(err);
-		});
-
-		res.on('end', function() {
-			cb();
-		});
-	});
-
-	req.on('error', function(err) {
 		cb(err);
 	});
-
-	req.setTimeout(120 * 1000);
-	req.end();
 }
 
 function step2(requestor, cedula, cb) {
-	var req;
-
-	req = requestor({
-		path: '/shopping/consultaDocumentos/consultaMorosidadPJInterna.jspx',
-		method: 'POST'
-	}, function(res) {
-		var html = '';
+	requestor({
+		url: 'https://www.rnpdigital.com/shopping/consultaDocumentos/consultaMorosidadPJInterna.jspx',
+		method: 'POST',
+		form: {
+			AJAXREQUEST: '_viewRoot',
+			form: 'form',
+			'form:tipo': cedula[0],
+			'form:clase': cedula.slice(1, 4),
+			'form:consecutivo': cedula.slice(4),
+			'javax.faces.ViewState': 'j_id3',
+			'form:j_id167': 'form:j_id167'
+		}
+	}, function(err, res, html) {
+		if (err) {
+			return cb(err);
+		}
 
 		assert.equal(res.statusCode, 200);
 
-		res.on('readable', function() {
-			html += res.read();
-		});
+		// TODO: Move this logic into the requestor function.
+		if (-1 !== html.indexOf('<meta name="Location" content="./login.jspx" />')) {
+			return cb(new Error('Session terminated for unknown reason.'));
+		}
 
-		res.on('error', function(err) {
-			cb(err);
-		});
+		jsdom.env(html, function(errs, window) {
+			var t, rows, results = {};
 
-		res.on('end', function() {
-
-			// TODO: Move this logic into the requestor function.
-			if (-1 !== html.indexOf('<meta name="Location" content="./login.jspx" />')) {
-				return cb(new Error('Session terminated for unknown reason.'));
+			if (errs) {
+				window.close();
+				return cb(errs);
 			}
 
-			jsdom.env(html, function(errs, window) {
-				var t, rows, results = {};
+			t = function(node) {
+				return node.textContent.trim();
+			};
 
-				if (errs) {
-					window.close();
-					return cb(errs);
+			rows = window.document.querySelectorAll('#form > table:last-of-type tr');
+			Array.prototype.forEach.call(rows, function(row, i, rows) {
+
+				// Skip the last row, which contains buttons.
+				if ((i + 1) === rows.length) {
+					return;
 				}
 
-				t = function(node) {
-					return node.textContent.trim();
-				};
-
-				rows = window.document.querySelectorAll('#form > table:last-of-type tr');
-				Array.prototype.forEach.call(rows, function(row, i, rows) {
-
-					// Skip the last row, which contains buttons.
-					if ((i + 1) === rows.length) {
-						return;
-					}
-
-					results[t(row.children[0])] = t(row.children[1]);
-				});
-
-				window.close();
-				cb(null, results);
+				results[t(row.children[0])] = t(row.children[1]);
 			});
+
+			window.close();
+			cb(null, results);
 		});
 	});
-
-	req.on('error', function(err) {
-		cb(err);
-	});
-
-	req.setTimeout(120 * 1000);
-	req.write('AJAXREQUEST=_viewRoot&form=form&form%3Atipo=' + cedula[0] + '&form%3Aclase=' + cedula.slice(1, 4) + '&form%3Aconsecutivo=' + cedula.slice(4) + '&javax.faces.ViewState=j_id3&form%3Aj_id167=form%3Aj_id167&');
-	req.end();
 }
