@@ -162,6 +162,12 @@ function step4(logger, requestor, cedula, cb) {
 		});
 
 		res.on('end', function() {
+
+			// TODO: Move this logic into the requestor function.
+			if (-1 !== html.indexOf('<meta name="Location" content="./login.jspx" />')) {
+				return cb(new Error('Session terminated for unknown reason.'));
+			}
+
 			jsdom.env(html, function(errs, window) {
 				var indexes;
 

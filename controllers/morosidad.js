@@ -94,8 +94,14 @@ function step2(requestor, cedula, cb) {
 		});
 
 		res.on('end', function() {
+
+			// TODO: Move this logic into the requestor function.
+			if (-1 !== html.indexOf('<meta name="Location" content="./login.jspx" />')) {
+				return cb(new Error('Session terminated for unknown reason.'));
+			}
+
 			jsdom.env(html, function(errs, window) {
-				var t, document, results = {};
+				var t, rows, results = {};
 
 				if (errs) {
 					window.close();
@@ -106,8 +112,8 @@ function step2(requestor, cedula, cb) {
 					return node.textContent.trim();
 				};
 
-				document = window.document;
-				Array.prototype.forEach.call(document.querySelectorAll('#form > table:last-of-type tr'), function(row, i, rows) {
+				rows = window.document.querySelectorAll('#form > table:last-of-type tr');
+				Array.prototype.forEach.call(rows, function(row, i, rows) {
 
 					// Skip the last row, which contains buttons.
 					if ((i + 1) === rows.length) {
