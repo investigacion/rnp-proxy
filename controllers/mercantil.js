@@ -12,6 +12,28 @@ exports.get = function(req, res) {
 	cedulas.scrape('Mercantil', req.params.cedula, scrape, res);
 };
 
+function normaliseCedula(cedula) {
+	var parts, zerofill;
+
+	zerofill = function(string, size) {
+		while (string.length < size) {
+			string = '0' + string;
+		}
+	};
+
+	// Cedulas are always of the format X-XXX-XXXXXX, but the RNP site converts each part to an integer so leading zeroes tend to be lost.
+	parts = cedula.split('-');
+	if (parts[1].length < 3) {
+		zerofill(parts[1], 3);
+	}
+
+	if (parts[2].length < 6) {
+		zerofill(parts[2], 6);
+	}
+
+	return parts.join();
+}
+
 function scrape(app, cedula, cb) {
 	var logger, cache;
 
@@ -268,7 +290,7 @@ function extractPerson(logger, requestor, cedula, index, cb) {
 
 				count++;
 				results.push({
-					cedulaJurídica: t(row.children[0]).replace(/\-/g, ''),
+					cedulaJurídica: normaliseCedula(t(row.children[0])),
 					nombre: t(row.children[1]),
 					citasInscripción: t(row.children[2]),
 					nombradoComo: t(row.children[3])
