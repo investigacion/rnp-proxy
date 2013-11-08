@@ -19,16 +19,18 @@ function normaliseCedula(cedula) {
 		while (string.length < size) {
 			string = '0' + string;
 		}
+
+		return string;
 	};
 
 	// Cedulas are always of the format X-XXX-XXXXXX, but the RNP site converts each part to an integer so leading zeroes tend to be lost.
 	parts = cedula.split('-');
 	if (parts[1].length < 3) {
-		zerofill(parts[1], 3);
+		parts[1] = zerofill(parts[1], 3);
 	}
 
 	if (parts[2].length < 6) {
-		zerofill(parts[2], 6);
+		parts[2] = zerofill(parts[2], 6);
 	}
 
 	return parts.join('');
