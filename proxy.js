@@ -88,5 +88,5 @@ server.on('connection', function(socket) {
 });
 
 server.listen(argv.port, function() {
-	logger.info('[Proxy] Listening on port ' + argv.port + ' with environment ' + app.get('env') + '.');
+	logger.info('[Proxy] Listening on port ' + argv.port + ' with ' + app.get('env') + ' environment.');
 });
