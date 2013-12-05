@@ -72,6 +72,7 @@ if (argv.cache) {
 app.use(express.compress());
 routes(app, require('./routes.json'));
 app.use(function(err, req, res, next) {
+	//jshint unused:false
 	logger.error('[Proxy] Error while handling request: ' + err);
 
 	res.json(500, err);
