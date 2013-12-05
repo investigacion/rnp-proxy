@@ -17,8 +17,8 @@ var argv = require('optimist')
 	.describe('port', 'Port to run proxy on')
 	.boolean('cache')
 	.describe('cache', 'Cache results using Redis')
-	.describe('cache-ttl', 'Cache TTL in seconds')
-	.default('cache-ttl', 60 * 60 * 24 * 7)
+	.describe('cache-ttl', 'Cache TTL in days')
+	.default('cache-ttl', 30)
 	.describe('redis-port', 'Connect to Redis on this port')
 	.describe('redis-host', 'Host on which Redis is running')
 	.argv;
@@ -61,7 +61,7 @@ if (argv.cache) {
 	cache = redis.createClient(argv['redis-port'], argv['redis-host']);
 
 	app.set('cache', cache);
-	app.set('cache ttl', argv['cache-ttl']);
+	app.set('cache ttl', argv['cache-ttl'] * 24 * 60 * 60);
 
 	cache.on('error', function(err) {
 		logger.error('[Proxy] Redis error: ' + err);
