@@ -120,11 +120,11 @@ function step3(requestor, cb) {
 		form: {
 			AJAXREQUEST: '_viewRoot',
 			formBusqueda: 'formBusqueda',
-			'formBusqueda:j_id161': '1',
-			'formBusqueda:j_id165': '1',
-			'formBusqueda:j_id260': '',
-			'formBusqueda:j_id262': '',
-			'formBusqueda:j_id264': '',
+			'formBusqueda:j_id164': '1',
+			'formBusqueda:j_id168': '1',
+			'formBusqueda:j_id263': '',
+			'formBusqueda:j_id265': '',
+			'formBusqueda:j_id267': '',
 			'formBusqueda:modalBMOpenedState': '',
 			'formBusqueda:modalFincasOpenedState': '',
 			'formBusqueda:modalNombramientosOpenedState': '',
@@ -132,7 +132,7 @@ function step3(requestor, cb) {
 			'formBusqueda:modalPoderesOpenedState': '',
 			'formBusqueda:modalAllOpenedState': '',
 			'javax.faces.ViewState': 'j_id3',
-			'formBusqueda:j_id167': 'formBusqueda:j_id167'
+			'formBusqueda:j_id170': 'formBusqueda:j_id170'
 		}
 	}, function(err, res) {
 		if (err) {
@@ -151,9 +151,9 @@ function step4(logger, requestor, cedula, cb) {
 		form: {
 			AJAXREQUEST: '_viewRoot',
 			formBusqueda: 'formBusqueda',
-			'formBusqueda:j_id161': '1',
-			'formBusqueda:j_id165': '1',
-			'formBusqueda:j_id258': cedula,
+			'formBusqueda:j_id164': '1',
+			'formBusqueda:j_id168': '1',
+			'formBusqueda:j_id261': cedula,
 			'formBusqueda:modalBMOpenedState': '',
 			'formBusqueda:modalFincasOpenedState': '',
 			'formBusqueda:modalNombramientosOpenedState': '',
@@ -215,9 +215,9 @@ function extractPerson(logger, requestor, cedula, index, cb) {
 	form = {
 		AJAXREQUEST: '_viewRoot',
 		formBusqueda: 'formBusqueda',
-		'formBusqueda:j_id161': '1',
-		'formBusqueda:j_id165': '1',
-		'formBusqueda:j_id258': cedula,
+		'formBusqueda:j_id164': '1',
+		'formBusqueda:j_id168': '1',
+		'formBusqueda:j_id261': cedula,
 		'formBusqueda:modalBMOpenedState': '',
 		'formBusqueda:modalFincasOpenedState': '',
 		'formBusqueda:modalNombramientosOpenedState': '',
@@ -298,9 +298,9 @@ function extractPerson(logger, requestor, cedula, index, cb) {
 					form: {
 						AJAXREQUEST: '_viewRoot',
 						formBusqueda: 'formBusqueda',
-						'formBusqueda:j_id161': '1',
-						'formBusqueda:j_id165': '1',
-						'formBusqueda:j_id258': cedula,
+						'formBusqueda:j_id164': '1',
+						'formBusqueda:j_id168': '1',
+						'formBusqueda:j_id261': cedula,
 						'formBusqueda:modalBMOpenedState': '',
 						'formBusqueda:modalFincasOpenedState': '',
 						'formBusqueda:modalNombramientosOpenedState': '',
