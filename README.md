@@ -2,9 +2,12 @@
 
 RESTful HTTP proxy for rnpdigital.com, the *Registro Nacional de Costa Rica*. Use it as a basis for your own scraper by running requests against the proxy.
 
-Optionally caches results using [Redis](http://redis.io/) (on by default).
-
 Written by [Matthew Caruana Galizia](https://twitter.com/mcaruanagalizia) at La Nación.
+
+## Features ##
+
+ - Optionally caches results using [Redis](http://redis.io/) (off by default).
+ - Supports a credential pool. Supply multiple `username:password` sets to increase concurrency.
 
 ## Usage ##
 

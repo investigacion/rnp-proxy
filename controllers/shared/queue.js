@@ -7,23 +7,45 @@ var request = require('request');
 var assert = require('assert');
 
 var queue = async.queue(function(task, cb) {
-	login(function(err, requestor) {
-		task(err, requestor, cb);
+	var credentials = pool.shift();
+
+	login(credentials, function(err, requestor) {
+		task(err, requestor, function() {
+			pool.push(credentials);
+			cb.apply(null, arguments);
+		});
 	});
 }, 1);
 
 var timeout = 2 * 60 * 1000; // 2 minute timeout.
+var pool = [];
+var logger;
 
-exports.credentials = {};
-exports.logger = null;
+exports.credentials = function(credentials) {
+	if (!Array.isArray(credentials)) {
+		credentials = [credentials];
+	}
+
+	credentials.forEach(function(credentials) {
+		credentials = credentials.split(':');
+		pool.push({
+			username: credentials[0],
+			password: credentials[1]
+		});
+	});
+
+	queue.concurrency = pool.length;
+};
+
+exports.logger = function(value) {
+	logger = value;
+};
 
 exports.scrape = function(cb) {
 	queue.push(cb);
 };
 
-function login(cb) {
-	var credentials = exports.credentials, logger = exports.logger;
-
+function login(credentials, cb) {
 	async.waterfall([
 		function(cb) {
 			request({

@@ -8,16 +8,13 @@ var winston = require('winston');
 var redis = require('redis');
 
 var argv = require('optimist')
-	.usage('\nUsage: $0')
-	.demand('username')
-	.describe('username', 'Username for logging in to rnpdigital.com')
-	.demand('password')
-	.describe('password', 'Password for logging in to rnpdigital.com')
+	.usage('\nUsage: $0 -a user@example.com:password\n\nMultiple sets of credentials may be specified to increase the concurrency.')
+	.demand('a')
+	.describe('a', 'Colon-separated credentials for rnpdigital.com.')
 	.describe('port', 'Port to run proxy on')
 	.default('port', 3000)
 	.boolean('cache')
 	.describe('cache', 'Cache results using Redis')
-	.default('cache', true)
 	.describe('cache-ttl', 'Cache TTL in days')
 	.default('cache-ttl', 30)
 	.describe('redis-port', 'Connect to Redis on this port')
@@ -43,9 +40,8 @@ var app = express();
 var server = http.createServer();
 var cache;
 
-queue.credentials.password = argv.password;
-queue.credentials.username = argv.username;
-queue.logger = logger;
+queue.logger(logger);
+queue.credentials(argv.a);
 
 app.set('env', 'development');
 app.enable('case sensitive routing');
