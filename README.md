@@ -13,13 +13,13 @@ Written by [Matthew Caruana Galizia](https://twitter.com/mcaruanagalizia) at La 
 
 Run `node proxy.js` to see available command line options.
 
-Currently supports the following routes.
+Currently supports the following routes. Response body is always JSON.
 
-### `/cedulas/[cedula]/mercantil` ###
+### GET /cedulas/[cedula]/mercantil ###
 
 Get company-related data for the given _cédula física_.
 
-### `/cedulas/[cedula]/morosidad` ###
+### GET /cedulas/[cedula]/morosidad ###
 
 Get tax-defaulter data for the given _cédula juridica_.
 
