@@ -10,6 +10,7 @@ var redis = require('redis');
 var argv = require('optimist')
 	.usage('\nUsage: $0 -a user@example.com:password\n\nMultiple sets of credentials may be specified to increase the concurrency.')
 	.demand('a')
+	.alias('a', 'auth')
 	.describe('a', 'Colon-separated credentials for rnpdigital.com.')
 	.describe('port', 'Port to run proxy on')
 	.default('port', 3000)
