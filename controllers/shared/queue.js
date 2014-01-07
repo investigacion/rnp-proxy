@@ -18,20 +18,28 @@ var queue = async.queue(function(task, cb) {
 }, 1);
 
 var timeout = 2 * 60 * 1000; // 2 minute timeout.
-var pool = [];
+var pool;
 var logger;
 
 exports.credentials = function(credentials) {
+	if (arguments.length < 1) {
+		return pool;
+	}
+
 	if (!Array.isArray(credentials)) {
 		credentials = [credentials];
 	}
 
 	pool = credentials.map(function(credentials) {
-		credentials = credentials.split(':');
-		return {
-			username: credentials[0],
-			password: credentials[1]
-		};
+		if ('string' === typeof credentials) {
+			credentials = credentials.trim().split(':');
+			return {
+				username: credentials[0],
+				password: credentials[1]
+			};
+		}
+
+		return credentials;
 	});
 
 	queue.concurrency = pool.length;

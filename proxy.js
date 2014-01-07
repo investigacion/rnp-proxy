@@ -68,6 +68,7 @@ if (argv.cache) {
 
 // Compression comes first in the chain.
 app.use(express.compress());
+app.use(express.json());
 routes(app, require('./routes.json'));
 app.use(function(err, req, res, next) {
 	//jshint unused:false

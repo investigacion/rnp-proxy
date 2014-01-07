@@ -23,6 +23,18 @@ Get company-related data for the given _cédula física_.
 
 Get tax-defaulter data for the given _cédula juridica_.
 
+### GET /credentials ###
+
+Get the current credential list.
+
+### PUT /credentials ###
+
+Set the credential list. For example:
+
+```bash
+curl -X PUT -H "Content-Type: application/json" -d '["user@example.com:password"]' http://localhost:3000/credentials
+```
+
 ## License ##
 
 MIT

@@ -16,5 +16,9 @@ function route(app, path) {
 	var controller;
 
 	controller = require(__dirname + '/controllers/' + (pathname.basename(path) || 'index'));
-	app.get(path, controller.get);
+	['get', 'put'].forEach(function(method) {
+		if ('function' === typeof controller[method]) {
+			app[method](path, controller[method]);
+		}
+	});
 }
