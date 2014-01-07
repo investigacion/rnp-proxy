@@ -67,7 +67,7 @@ function step2(requestor, cedula, cb) {
 			'form:clase': cedula.slice(1, 4),
 			'form:consecutivo': cedula.slice(4),
 			'javax.faces.ViewState': 'j_id3',
-			'form:j_id167': 'form:j_id167'
+			'form:j_id170': 'form:j_id170'
 		}
 	}, function(err, res, html) {
 		if (err) {
