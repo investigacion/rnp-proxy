@@ -35,6 +35,10 @@ exports.credentials = function(credentials) {
 	});
 
 	queue.concurrency = pool.length;
+
+	if (logger) {
+		logger.info('[Queue] Set credentials. Concurrency set to ' + pool.length + '.');
+	}
 };
 
 exports.logger = function(value) {
