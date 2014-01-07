@@ -37,11 +37,9 @@ function normaliseCedula(cedula) {
 }
 
 function scrape(app, cedula, cb) {
-	var logger, cache;
+	var logger;
 
-	cache = app.get('cache');
 	logger = app.get('logger');
-
 	logger.info('[Mercantil] [' + cedula + '] Scraping.');
 
 	queue.scrape(function(err, requestor, next) {

@@ -13,11 +13,9 @@ exports.get = function(req, res) {
 };
 
 function scrape(app, cedula, cb) {
-	var logger, cache;
+	var logger;
 
-	cache = app.get('cache');
 	logger = app.get('logger');
-
 	logger.info('[Morosidad] [' + cedula + '] Scraping.');
 
 	queue.scrape(function(err, requestor, next) {
