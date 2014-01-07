@@ -59,10 +59,11 @@ function login(credentials, cb) {
 			}, function(err, res) {
 				var sessionId;
 
-				assert.equal(res.statusCode, 200);
 				if (err) {
 					return cb(err);
 				}
+
+				assert.equal(res.statusCode, 200);
 
 				sessionId = res.headers['set-cookie'][0].match(/JSESSIONID=([^;]+)/)[1];
 
