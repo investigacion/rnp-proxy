@@ -26,12 +26,12 @@ exports.credentials = function(credentials) {
 		credentials = [credentials];
 	}
 
-	credentials.forEach(function(credentials) {
+	pool = credentials.map(function(credentials) {
 		credentials = credentials.split(':');
-		pool.push({
+		return {
 			username: credentials[0],
 			password: credentials[1]
-		});
+		};
 	});
 
 	queue.concurrency = pool.length;
