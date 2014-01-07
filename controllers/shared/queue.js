@@ -66,8 +66,8 @@ function login(credentials, cb) {
 
 				sessionId = res.headers['set-cookie'][0].match(/JSESSIONID=([^;]+)/)[1];
 
-				logger.info('[Queue] [' + sessionId + '] Got session ID.');
-				logger.info('[Queue] [' + sessionId + '] Submitting login data.');
+				logger.info('[Queue] [' + credentials.username + '] Got session ID ' + sessionId + '.');
+				logger.info('[Queue] [' + credentials.username + '] Submitting login data.');
 
 				cb(null, sessionId);
 			});
@@ -99,7 +99,7 @@ function login(credentials, cb) {
 				if (-1 !== html.indexOf('Datos incorrectos')) {
 
 					// TODO: Use a username and password pool.
-					logger.error('[Queue] [' + sessionId + '] Login failed: invalid credentials.');
+					logger.error('[Queue] [' + credentials.username + '] Login failed: invalid credentials.');
 					return cb(new Error('Login failed: invalid credentials.'));
 				}
 
