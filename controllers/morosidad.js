@@ -49,8 +49,12 @@ function step1(requestor, cb) {
 	requestor({
 		url: 'https://www.rnpdigital.com/shopping/consultaDocumentos/consultaMorosidadPJInterna.jspx'
 	}, function(err, res) {
+		if (err) {
+			return cb(err);
+		}
+
 		assert.equal(res.statusCode, 200);
-		cb(err);
+		cb();
 	});
 }
 
