@@ -20,6 +20,10 @@ var argv = require('optimist')
 	.default('cache-ttl', 30)
 	.describe('redis-port', 'Connect to Redis on this port')
 	.describe('redis-host', 'Host on which Redis is running')
+	.boolean('socks')
+	.describe('proxy', 'Use a SOCKS5 proxy')
+	.describe('socks-port', 'SOCKS5 proxy port')
+	.describe('socks-host', 'SOCKS5 proxy host')
 	.argv;
 
 var logger = new winston.Logger({
@@ -41,8 +45,23 @@ var app = express();
 var server = http.createServer();
 var cache;
 
+var Socks5ClientHttpsAgent;
+
 queue.logger(logger);
 queue.credentials(argv.a);
+
+if (argv.proxy) {
+	Socks5ClientHttpsAgent = require('socks5-https-client/lib/Agent');
+
+	logger.info('[Proxy] Using SOCKS5 proxy.');
+
+	queue.agent(function() {
+		return new Socks5ClientHttpsAgent({
+			socksHost: argv['socks-host'],
+			socksPort: argv['socks-port']
+		});
+	});
+}
 
 app.set('env', 'development');
 app.enable('case sensitive routing');

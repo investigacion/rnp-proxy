@@ -18,8 +18,7 @@ var queue = async.queue(function(task, cb) {
 }, 1);
 
 var timeout = 2 * 60 * 1000; // 2 minute timeout.
-var pool;
-var logger;
+var pool, logger, agent;
 
 exports.credentials = function(credentials) {
 	if (arguments.length < 1) {
@@ -57,12 +56,17 @@ exports.scrape = function(cb) {
 	queue.push(cb);
 };
 
+exports.agent = function(factory) {
+	agent = factory;
+};
+
 function login(credentials, cb) {
 	async.waterfall([
 		function(cb) {
 			request({
 				url: 'https://www.rnpdigital.com/shopping/login.jspx',
 				timeout: timeout,
+				agent: agent(),
 				followRedirect: false
 			}, function(err, res) {
 				var sessionId;
@@ -87,6 +91,7 @@ function login(credentials, cb) {
 				url: 'https://www.rnpdigital.com/shopping/login.jspx',
 				method: 'POST',
 				timeout: timeout,
+				agent: agent(),
 				followRedirect: false,
 				headers: {
 					'Cookie': 'JSESSIONID=' + sessionId + ';'
@@ -123,6 +128,7 @@ function login(credentials, cb) {
 
 			options.headers.Cookie = 'JSESSIONID=' + sessionId + ';';
 			options.timeout = timeout;
+			options.agent = agent();
 			options.followRedirect = false;
 
 			return request(options, cb);
