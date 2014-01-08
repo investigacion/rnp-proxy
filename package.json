@@ -1,12 +1,12 @@
 {
 	"private": true,
 	"dependencies": {
-		"optimist": "0.x",
-		"jsdom": "0.x",
-		"express": "3.x",
-		"winston": "0.x",
-		"async": "0.x",
-		"redis": "0.x",
-		"request": "2.x"
+		"optimist": "~0.6.0",
+		"jsdom": "~0.8.10",
+		"express": "~3.4.7",
+		"winston": "~0.7.2",
+		"async": "~0.2.9",
+		"redis": "~0.10.0",
+		"request": "~2.31.0"
 	}
 }
