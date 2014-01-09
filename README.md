@@ -8,6 +8,7 @@ Written by [Matthew Caruana Galizia](https://twitter.com/mcaruanagalizia) at La 
 
  - Optionally caches results using [Redis](http://redis.io/) (off by default).
  - Supports a credential pool. Supply multiple `username:password` sets to increase concurrency.
+ - SOCKS5 proxying.
 
 ## Usage ##
 
