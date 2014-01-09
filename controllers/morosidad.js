@@ -84,7 +84,7 @@ function step2(requestor, cedula, cb) {
 		}
 
 		jsdom.env(html, function(errs, window) {
-			var t, rows, results = {};
+			var t, rows, fields, results = {};
 
 			if (errs) {
 				window.close();
@@ -95,15 +95,34 @@ function step2(requestor, cedula, cb) {
 				return node.textContent.trim();
 			};
 
+			fields = [
+				'RAZON SOCIAL',
+				'PERIODOS PENDIENTES',
+				'PYMES',
+				'ACTIVA HACIENDA',
+				'ESTADO',
+				'A ESTE MOMENTO LA ENTIDAD SE ENCUENTRA',
+				'MONTO TOTAL A CANCELAR AL DIA DE HOY'
+			];
+
 			rows = window.document.querySelectorAll('#form > table:last-of-type tr');
 			Array.prototype.forEach.call(rows, function(row, i, rows) {
+				var field, subrows;
 
-				// Skip the last row, which contains buttons.
-				if ((i + 1) === rows.length) {
-					return;
+				field = t(row.children[0]);
+				if ('DETALLE DE LA DEUDA' === field) {
+					subrows = row.querySelectorAll('tr.rich-table-row');
+					Array.prototype.forEach.call(subrows, function(subrow) {
+						var year;
+
+						year = t(subrow.children[0]);
+
+						results['DEUDA ' + year + ' MONTO'] = t(subrow.children[1]);
+						results['DEUDA ' + year + ' INTERES'] = t(subrow.children[2]);
+					});
+				} else if (-1 !== fields.indexOf(field)) {
+					results[field] = t(row.children[1]);
 				}
-
-				results[t(row.children[0])] = t(row.children[1]);
 			});
 
 			window.close();
